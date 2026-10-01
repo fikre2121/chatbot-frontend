@@ -7,7 +7,12 @@ import { getConversations, createConversation } from "@/lib/api";
 import ConversationItem from "./ConversationItem";
 import { useAuth } from "@/context/AuthContext";
 
-export default function ConversationSidebar() {
+interface Props {
+  open: boolean;
+  onClose: () => void;
+}
+
+export default function ConversationSidebar({ open, onClose }: Props) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
 
   const [loading, setLoading] = useState(true);
@@ -62,6 +67,7 @@ export default function ConversationSidebar() {
       setConversations((prev) => [conv, ...prev]);
 
       router.push(`/chat/${conv.id}`);
+      onClose(); // auto-close sidebar on mobile after navigating
     } catch (err) {
       console.error("Failed to create conversation:", err);
 
@@ -84,7 +90,15 @@ export default function ConversationSidebar() {
   }
 
   return (
-    <aside className="flex h-full w-72 flex-col border-r border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950">
+    <aside
+      className={`
+        fixed md:static inset-y-0 left-0 z-30
+        flex h-full w-72 flex-col border-r border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950
+        transform transition-transform duration-200
+        ${open ? "translate-x-0" : "-translate-x-full"}
+        md:translate-x-0
+      `}
+    >
       {/* Sidebar Header */}
       <div className="flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-2">
@@ -107,6 +121,27 @@ export default function ConversationSidebar() {
             AI Chatbot
           </h2>
         </div>
+
+        {/* Close button — mobile only */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="md:hidden text-gray-500 hover:text-gray-900 dark:hover:text-gray-100"
+          aria-label="Close sidebar"
+        >
+          <svg
+            className="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 6 6 18" />
+            <path d="M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       {/* New Chat Button */}
